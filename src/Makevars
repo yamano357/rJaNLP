@@ -1,0 +1,2 @@
+PKG_CXXFLAGS = -std=c++0x -I/opt/local/include
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` -lmecab -lcabocha
