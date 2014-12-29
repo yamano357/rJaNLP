@@ -22,6 +22,7 @@
 #'  Rcpp
 #'  Rcpp11
 #'  BH
+#'  rJava
 #' @exportPattern '^[[:alpha:]]+' 
 NULL
 
@@ -36,11 +37,15 @@ JaNLP <- R6Class(
   portable = FALSE,
   public = list(
     text = NA,
-    initialize = function(text) {
+    kuromoji_jar = NA,
+    initialize = function(text, kuromoji_jar) {
       if (!missing(text)) {
         self$text <- text
       } else {
         self$text <- ""
+      }
+      if (!missing(kuromoji_jar)) {
+        self$kuromoji_jar <- kuromoji_jar
       }
     },
     mecab = function() {
@@ -55,6 +60,17 @@ JaNLP <- R6Class(
         executeCabocha(str = self$text)
       } else {
         executeCabocha(str = "")
+      }
+    },
+    kuromoji = function(set.mode = NULL) {
+      if (is.na(self$kuromoji_jar)) {
+        
+      } else {
+        if (!is.na(self$text)) {
+          executeKuromoji(str = self$text, set.mode, jar.path = self$kuromoji_jar)
+        } else {
+          executeKuromoji(str = "", set.mode, jar.path = self$kuromoji_jar)
+        }
       }
     }
   )
@@ -123,5 +139,41 @@ NULL
 #' library(RjaNLP)
 #' example <- JaNLP$new(text = "すもももももももものうち")
 #' res.cabocha <- example$cabocha()
+NULL
+
+
+#' Japanese Part-of-Speech and Morphological Analyze using Kuromoji
+#'
+#' The \code{kuromoji} method of \code{jaNLP} class for Japanese PoS tagging and morphological analyze
+#'
+#' "Kuromoji is an open source Japanese morphological analyzer written in Java." \cr \url{http://www.atilika.org}
+#'
+#' @name kuromoji
+#' @aliases kuromoji
+#' @rdname kuromoji
+#' @docType methods
+#'
+#' @usage \S4method{kuromoji}{jaNLP}(str = "", set.mode = NULL, jar.path = NULL)
+#' @param \code{str} input single character vector for Kuromoji analysis
+#' @param \code{set.mode} set Kuromoji's segmentation modes (default: "Normal"). See \url{http://www.atilika.org}[Kuromoji] "Designed for search"
+#' @param \code{jar.path} kuromoji.jar file path (default: "./libs/kuromoji-0.7.7.jar")
+#' @return  
+#'  \describe{
+#'  \item{\code{surface}}{表層形}
+#'  \item{\code{feature}}{品詞,品詞細分類1,品詞細分類2,品詞細分類3,活用形,活用型,原形,読み,発音}
+#'  \item{\code{is_know}}{"Returns true if this token is known word"}
+#'  \item{\code{is_unk}}{"Returns true if this token is unknown word"}
+#'  \item{\code{is_user}}{"Returns true if this token is defined in user dictionary"}
+#'  \item{\code{mode}}{segmentation modes}
+#'  }
+#' @examples
+#' library(RjaNLP)
+#' example <- JaNLP$new(
+#'  text = "日本経済新聞でモバゲーの記事を読んだ",
+#'  kuromoji_jar = "./libs/kuromoji-0.7.7.jar"
+#' )
+#' normal.res <- example$kuromoji()
+#' search.res <- example$kuromoji(set.mode = "SEARCH")
+#' extend.res <- example$kuromoji(set.mode = "EXTENDED")
 NULL
 
